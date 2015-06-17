@@ -4,7 +4,6 @@ use common::sense;
 use AnyEvent;
 use AnyEvent::HTTP;
 use URI;
-use JSON;
 
 $AnyEvent::HTTP::MAX_PER_HOST=8;
 my $cv = AE::cv;
