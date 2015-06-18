@@ -4,6 +4,8 @@ use common::sense;
 use AnyEvent;
 use AnyEvent::HTTP;
 use URI;
+use DateTime::Format::Natural;
+my $date_parser = DateTime::Format::Natural->new();
 
 $AnyEvent::HTTP::MAX_PER_HOST=8;
 my $cv = AE::cv;
@@ -14,12 +16,15 @@ my %results;
 my $fn = 'output.tsv';
 my $page = 'http://saturn.jpl.nasa.gov/photos/raw/rawimagedetails/index.cfm?imageID=';
 
-my $savew = AE::timer(300, 300, sub { save(); export(); });
+my $savew = AE::timer(300, 300, sub { save(); });
 load();
 
 $cv->begin;
 for my $id (320000 .. 322000) {
-    next if exists $results{$id};
+    if (exists $results{$id}) {
+        download ($id);
+        next;
+    };
     $cv->begin;
     http_request (
         GET => $page . $id,
@@ -39,17 +44,22 @@ for my $id (320000 .. 322000) {
             my ($range)              = $line =~ m/\(([\d,]+) kilometers\) away/;
             my ($filter1, $filter2)  = $line =~ m/image was taken using the (\w+) and (\w+) filter/;
 
+            return unless $file;
+
             my @parts = (
                 $id,
-                $file, $taken, $recvd,
-                $target,
-                $range,
+                $file, date_fmt($taken), date_fmt($recvd),
+                target_fmt($target),
+                range_fmt($range),
                 $filter1, $filter2,
                 URI->new($link)->abs($page)->as_string);
+            my $download_as = join('.', $parts[2], $parts[1] =~ /^(\w+).jpg/, @parts[6,8,9,7], 'jpg');
+            push @parts, $download_as;
 
             AE::log info => join ('|', @parts);
 
-            $results{$id} = \@parts if $file;
+            $results{$id} = \@parts;
+            download($id);
         });
 }
 $cv->end;
@@ -58,13 +68,37 @@ $cv->wait;
 save();
 exit 0;
 
+sub download {
+    my $id = shift;
+    my ($url,$fn,$mtime) = @{$results{$id}}[10,11,3];
+
+    $fn = 'images/'.$fn;
+    return if -f $fn;
+    $cv->begin;
+    http_request(
+        GET => $url,
+        persistent => 1,
+        sub {
+            my ($body, $hdr) = @_;
+            $cv->end;
+            $hdr->{Status} == 200 or return AE::log warn => "%u %u", $hdr->{Status}, $id;
+            mkdir 'images' unless -d 'images';
+            open my $fh, ">", $fn
+                or return AE::log warn => "Can't open $fn for output!";
+            print $fh $body;
+            close $fh;
+            utime $mtime, $mtime, $fn;
+            AE::log info => "download %s from %s", $fn, $url;
+        });
+}
+
 sub save {
     rename $fn, $fn.'.old';
     open my $fh, "> :encoding(UTF-8)", $fn
         or return AE::log warn => "Can't open $fn for output!";
 
     AE::log info => 'Saving. Stats: ' .  %results . " " .  keys %results;
-    say $fh join("\t", qw(id file taken recvd target range-km filter1 filter2 image-url));
+    say $fh join("\t", qw(id file taken taken-unix recvd recvd-unix target range-km filter1 filter2 image-url download-as));
     for (sort keys %results) {
         say $fh join("\t", @{$results{$_}});
     }
@@ -80,4 +114,24 @@ sub load {
         $results{$line[0]} = \@line;
     }
     AE::log info => 'Loaded. Stats: ' .  %results . " " .  keys %results;
+}
+
+sub range_fmt {
+    my $r = shift;
+    $r =~ s/,//g;
+    return $r+0;
+}
+
+sub date_fmt {
+    my $ds = shift;
+    my $dt = $date_parser->parse_datetime($ds);
+    return ($dt->ymd(''), $dt->epoch()) if ($date_parser->success);
+    AE::log warn => "date conversion failed for %s", $ds;
+    return ($ds,undef);
+}
+
+sub target_fmt {
+    my $t = shift;
+    $t =~ s/ /-/;
+    return $t;
 }
