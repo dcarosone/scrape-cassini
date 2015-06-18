@@ -49,14 +49,14 @@ for my $id (300000 .. 335000) {
             return unless $file;
 
             my @parts = (
-                $id,
-                $file, date_fmt($taken), date_fmt($recvd),
-                target_fmt($target),
-                range_fmt($range),
-                $filter1, $filter2,
-                URI->new($link)->abs($page)->as_string);
+                $id, $file,                              # 0, 1
+                date_fmt($taken), date_fmt($recvd),      # 2, 3, 4, 5 (2 each)
+                target_fmt($target),                     # 6
+                range_fmt($range),                       # 7
+                $filter1, $filter2,                      # 8, 9
+                URI->new($link)->abs($page)->as_string); # 10
             my $download_as = join('.', $parts[2], $parts[1] =~ /^(\w+).jpg/, @parts[6,8,9,7], 'jpg');
-            push @parts, $download_as;
+            push @parts, $download_as;                   # 11
 
             AE::log info => join ('|', @parts);
 
@@ -134,6 +134,6 @@ sub date_fmt {
 
 sub target_fmt {
     my $t = shift;
-    $t =~ s/ /-/;
+    $t =~ s/ /-/g;
     return $t;
 }
