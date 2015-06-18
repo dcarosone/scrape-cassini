@@ -72,16 +72,27 @@ next time. This has two implications:
 2. There are some gaps in image numbers; these will be re-attempted
    each time.
 
+Try not to run it too often and annoy the NASA admins.
+
 ## Output
 
-The TSV file has the following format:
+The TSV file has the following fields, 
 
-id | file | taken | taken-unix | recvd | recvd-unix | target | range-km | filter1 | filter2 | image-url | download-as
--- | ---- | ----- | ---------- | ----- | ---------- | ------ | -------- | ------- | ------- | --------- | -----------
-300000 | N00217467.jpg | 20131015 | 1381795200 | 20131016 | 1381881600 | TITAN | 558487 | CL1 | CB3 | http://saturn.jpl.nasa.gov/multimedia/images/raw/casJPGFullS80/N00217467.jpg | 20131015.N00217467.TITAN.CL1.CB3.558487.jpg
-300001 | N00217468.jpg | 20131015 | 1381795200 | 20131016 | 1381881600 | TITAN | 558775 | CL1 | CB3 | http://saturn.jpl.nasa.gov/multimedia/images/raw/casJPGFullS80/N00217468.jpg | 20131015.N00217468.TITAN.CL1.CB3.558775.jpg
-300002 | N00217469.jpg | 20131015 | 1381795200 | 20131016 | 1381881600 | TITAN | 559352 | CL1 | CB3 | http://saturn.jpl.nasa.gov/multimedia/images/raw/casJPGFullS80/N00217469.jpg | 20131015.N00217469.TITAN.CL1.CB3.559352.jpg
-300003 | N00217470.jpg | 20131015 | 1381795200 | 20131016 | 1381881600 | TITAN | 
+* `id` The id=nnnn part of the image catalog page
+* `file` The image filename on the Cassini server.  W/N in the first
+  character indicates Wide/Narrow camera.
+* `taken` The date the image was taken
+* `taken-unix` .. as a unix timestamp
+* `recvd` The date the image was received on Earth
+* `recvd-unix` .. as a unix timestamp
+* `target` The name of the target the camera was pointing at.
+* `range-km` The range to target, in km (may be 0)
+* `filter1` The first filter used.
+* `filter2` The secont filter used.
+* `image-url` The image download url.
+* `download-as` The filename it will be save as, encoding the above fields.
+
+There's a sample in the repo to look at.
 
 ## Issues
 
