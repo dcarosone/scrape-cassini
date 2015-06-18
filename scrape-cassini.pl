@@ -3,11 +3,13 @@
 use common::sense;
 use AnyEvent;
 use AnyEvent::HTTP;
+use AnyEvent::Log;
 use URI;
 use DateTime::Format::Natural;
 my $date_parser = DateTime::Format::Natural->new();
 
 $AnyEvent::HTTP::MAX_PER_HOST=8;
+$AnyEvent::Log::FILTER->level ("info");
 my $cv = AE::cv;
 my $cvint = AE::signal INT => sub {$cv->send};
 
@@ -20,7 +22,7 @@ my $savew = AE::timer(300, 300, sub { save(); });
 load();
 
 $cv->begin;
-for my $id (320000 .. 322000) {
+for my $id (300000 .. 335000) {
     if (exists $results{$id}) {
         download ($id);
         next;
@@ -33,7 +35,7 @@ for my $id (320000 .. 322000) {
             my ($body, $hdr) = @_;
             $cv->end;
 
-            $hdr->{Status} == 200 or return AE::log warn => "%u %u", $hdr->{Status}, $id;
+            $hdr->{Status} == 200 or return AE::log warn => "http %u for GET %u", $hdr->{Status}, $id;
 
             my ($link) = $body =~ m/^\s+<strong><a href="(.+?)">Full-Res:/mc;
             my ($line) = $body =~ m/^\s+(\D\d+\.jpg was taken on.*?)</m;
@@ -97,7 +99,7 @@ sub save {
     open my $fh, "> :encoding(UTF-8)", $fn
         or return AE::log warn => "Can't open $fn for output!";
 
-    AE::log info => 'Saving. Stats: ' .  %results . " " .  keys %results;
+    AE::log note => 'Saving metadata: %d known images', scalar keys %results;
     say $fh join("\t", qw(id file taken taken-unix recvd recvd-unix target range-km filter1 filter2 image-url download-as));
     for (sort keys %results) {
         say $fh join("\t", @{$results{$_}});
@@ -113,7 +115,7 @@ sub load {
         next if $line[0] eq 'id';
         $results{$line[0]} = \@line;
     }
-    AE::log info => 'Loaded. Stats: ' .  %results . " " .  keys %results;
+    AE::log note => 'Loaded metadata: %d known images', scalar keys %results;
 }
 
 sub range_fmt {
