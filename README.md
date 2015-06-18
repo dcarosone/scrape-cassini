@@ -29,9 +29,10 @@ TSV, or delete the image file.
 The program is a perl script with dependency on a few libraries.
 
 Steps:
+
 1. Clone this repository
 2. Install perl module dependencies
-3. Run ./scrape-cassini.pl
+3. Run `./scrape-cassini.pl`
 4. Lose your day browsing images.
 
 On Ubuntu, the following should install the needed deps:
