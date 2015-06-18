@@ -76,12 +76,12 @@ next time. This has two implications:
 
 The TSV file has the following format:
 
-id|file|taken|taken-unix|recvd|recvd-unix|target|range-km|filter1|filter2|image-url|download-as
---|----|-----|----------|-----|----------|------|--------|-------|-------|---------|-----------
-300000|N00217467.jpg|20131015|1381795200|20131016|1381881600|TITAN|558487|CL1|CB3|http://saturn.jpl.nasa.gov/multimedia/images/raw/casJPGFullS80/N00217467.jpg|20131015.N00217467.TITAN.CL1.CB3.558487.jpg
-300001|N00217468.jpg|20131015|1381795200|20131016|1381881600|TITAN|558775|CL1|CB3|http://saturn.jpl.nasa.gov/multimedia/images/raw/casJPGFullS80/N00217468.jpg|20131015.N00217468.TITAN.CL1.CB3.558775.jpg
-300002|N00217469.jpg|20131015|1381795200|20131016|1381881600|TITAN|559352|CL1|CB3|http://saturn.jpl.nasa.gov/multimedia/images/raw/casJPGFullS80/N00217469.jpg|20131015.N00217469.TITAN.CL1.CB3.559352.jpg
-300003|N00217470.jpg|20131015|1381795200|20131016|1381881600|TITAN|
+id | file | taken | taken-unix | recvd | recvd-unix | target | range-km | filter1 | filter2 | image-url | download-as
+-- | ---- | ----- | ---------- | ----- | ---------- | ------ | -------- | ------- | ------- | --------- | -----------
+300000 | N00217467.jpg | 20131015 | 1381795200 | 20131016 | 1381881600 | TITAN | 558487 | CL1 | CB3 | http://saturn.jpl.nasa.gov/multimedia/images/raw/casJPGFullS80/N00217467.jpg | 20131015.N00217467.TITAN.CL1.CB3.558487.jpg
+300001 | N00217468.jpg | 20131015 | 1381795200 | 20131016 | 1381881600 | TITAN | 558775 | CL1 | CB3 | http://saturn.jpl.nasa.gov/multimedia/images/raw/casJPGFullS80/N00217468.jpg | 20131015.N00217468.TITAN.CL1.CB3.558775.jpg
+300002 | N00217469.jpg | 20131015 | 1381795200 | 20131016 | 1381881600 | TITAN | 559352 | CL1 | CB3 | http://saturn.jpl.nasa.gov/multimedia/images/raw/casJPGFullS80/N00217469.jpg | 20131015.N00217469.TITAN.CL1.CB3.559352.jpg
+300003 | N00217470.jpg | 20131015 | 1381795200 | 20131016 | 1381881600 | TITAN | 
 
 ## Issues
 
