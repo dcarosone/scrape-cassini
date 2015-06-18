@@ -59,8 +59,8 @@ already known before looking for more.
 ## Tweaking and Load
 
 At present, the image numbers to fetch are hard-coded. They start at
-images near the end of 2013, and run up to a little higher than
-present count at time of writing.
+images near the end of 2013 (images before this will be in the PDS),
+and run up to a little higher than present count at time of writing.
 
 Images that don't exist on the server will be skipped, and retried
 next time. This has two implications:
