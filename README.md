@@ -38,7 +38,7 @@ Steps:
 On Ubuntu, the following should install the needed deps:
 
 ```
-apt-get install libanyevent-perl libanyevent-http-perl libdatetime-format-natural-perl liburi-perl
+apt-get install libanyevent-http-perl libdatetime-format-natural-perl liburi-perl
 ```
 
 Also recommended but not critical: `libev-perl`
@@ -48,30 +48,32 @@ othewise use `CPAN`.
 
 ## Scheduling
 
-All requests are scheduled in a queue; this has the effect that the
-first time it's run, it will spend a long time fetching metadata
-before any image downloads reach the front of the queue.
+All requests are scheduled in a (potentially very long) queue; this
+has the effect that the first time it's run, it will spend a long time
+fetching metadata before any image downloads reach the front of the
+queue.
 
 If you want to see some images, let it run for a while, interrupt it
-with ^C, and start it again.  This will queue downloads for the images
+with `^C`, and start it again.  This will queue downloads for the images
 already known before looking for more.
 
 ## Tweaking and Load
 
-At present, the image numbers to fetch are hard-coded. They start at
-images near the end of 2013 (images before this will be in the PDS),
-and run up to a little higher than present count at time of writing.
+The script is wired to start at the first image of 2014 (images before
+this will be in the PDS).  If you want to change this range you can
+edit the line
+
+```perl
+    get_metadata($_) for (302919 .. $max); # 1st image of 2014
+```
+
+New images will be auto-detected on each run.
 
 Images that don't exist on the server will be skipped, and retried
-next time. This has two implications:
-
-1. Sometime relatively soon, images will arrive outside the configured
-   range, and it will stop noticing new images.  This will be fixed
-   with a smarter detection routing before that happens (otherwise
-   just change the numbers at the top of the loop).
-
-2. There are some gaps in image numbers; these will be re-attempted
-   each time.
+next time. Sometimes image links show up in the index page shortly
+before the corresponding images actually exist. However, there are
+also some internal gaps in valid image numbers; these will be
+re-attempted each time.
 
 Try not to run it too often and annoy the NASA admins.
 
@@ -89,7 +91,7 @@ The TSV file has the following fields,
 * `target` The name of the target the camera was pointing at.
 * `range-km` The range to target, in km (may be 0)
 * `filter1` The first filter used.
-* `filter2` The secont filter used.
+* `filter2` The second filter used.
 * `image-url` The image download url.
 * `download-as` The filename it will be save as, encoding the above fields.
 
