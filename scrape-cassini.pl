@@ -99,7 +99,7 @@ sub download {
     fetch($url, sub {
         my $body = shift;
         mkdir 'images' unless -d 'images';
-        open my $fh, ">", $fn
+        open my $fh, "> :raw", $fn
             or return AE::log warn => "Can't open $fn for output!";
         print $fh $body;
         close $fh;
