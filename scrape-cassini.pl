@@ -66,7 +66,7 @@ sub get_metadata {
             target_fmt($target),                     # 6
             range_fmt($range),                       # 7
             $filter1, $filter2,                      # 8, 9
-                URI->new($link)->abs($page)->as_string); # 10
+            URI->new($link)->abs($page)->as_string); # 10
         my $download_as = join('.', $parts[2], $parts[1] =~ /^(\w+).jpg/, @parts[6,8,9,7], 'jpg');
         push @parts, $download_as;                   # 11
 
