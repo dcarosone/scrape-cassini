@@ -44,7 +44,18 @@ apt-get install libanyevent-http-perl libdatetime-format-natural-perl liburi-per
 Also recommended but not critical: `libev-perl`
 
 On other systems, similar package tools should provide what's needed,
-othewise use `CPAN`.
+although the names of the packages will vary by platform and packaging system.
+
+Otherwise use `CPAN` or `CPANM`, with the native perl module names:
+```
+cpanm AnyEvent
+cpanm AnyEvent::HTTP
+cpanm DateTime::Format::Natural
+cpanm URI
+```
+
+Note: I'm advised you may need `--force` for the `AnyEvent` module, 
+at least on Windows; I have not yet looked into why.
 
 ## Scheduling
 
