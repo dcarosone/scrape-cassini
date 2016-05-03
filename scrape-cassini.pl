@@ -4,6 +4,7 @@ use common::sense;
 use AnyEvent;
 use AnyEvent::HTTP;
 use AnyEvent::Log;
+use JSON;
 use URI;
 use DateTime::Format::Natural;
 my $date_parser = DateTime::Format::Natural->new();
@@ -12,7 +13,6 @@ $AnyEvent::HTTP::MAX_PER_HOST=8;
 $AnyEvent::Log::FILTER->level ("info");
 
 my $fn = 'output.tsv';
-my $page = 'http://saturn.jpl.nasa.gov/photos/raw/rawimagedetails/index.cfm?imageID=';
 my $cv = AE::cv;
 
 my %results;
@@ -29,51 +29,33 @@ if (scalar %results) {
     AE::log note => "Queued %d downloads of previously known images..", $count if $count;
 }
 
-AE::log note => "Looking for latest image..";
-fetch ('http://saturn.jpl.nasa.gov/photos/raw/?start=1', sub {
-    my $body = shift;
-    my ($max) = $body =~ m{^\s+<a href="rawimagedetails/index.cfm\?imageID=(\d+)">}m;
-    AE::log note => "Found max image id: %d", $max;
-    return unless $max;
-    get_metadata($_) for (302919 .. $max); # 1st image of 2014
-    $cv->end;
-});
-
+getpage();
 $cv->wait;
 save();
 exit 0;
 
-
-sub get_metadata {
-    my $id = shift;
-    return if exists $results{$id};
-    fetch ($page . $id, sub {
-        my $body = shift;
-        my ($link) = $body =~ m/^\s+<strong><a href="(.+?)">Full-Res:/mc;
-        my ($line) = $body =~ m/^\s+(\D\d+\.jpg was taken on.*?)</m;
-        AE::log debug => $line;
-
-        my ($file,$taken,$recvd) = $line =~ m/(\D\d+.jpg) was taken on (.+?) and received on Earth (.+?). The/;
-        my ($target)             = $line =~ m/The camera was pointing toward ([[:upper:]\s-_]+)[ ,]/;
-        my ($range)              = $line =~ m/\(([\d,]+) kilometers\) away/;
-        my ($filter1, $filter2)  = $line =~ m/image was taken using the (\w+) and (\w+) filter/;
-
-        return unless $file;
-
-        my @parts = (
-            $id, $file,                              # 0, 1
-            date_fmt($taken), date_fmt($recvd),      # 2, 3, 4, 5 (2 each)
-            target_fmt($target),                     # 6
-            range_fmt($range),                       # 7
-            $filter1, $filter2,                      # 8, 9
-            URI->new($link)->abs($page)->as_string); # 10
-        my $download_as = join('.', $parts[2], $parts[1] =~ /^(\w+).jpg/, @parts[6,8,9,7], 'jpg');
-        push @parts, $download_as;                   # 11
-
-        AE::log info => join ('|', @parts);
-
-        $results{$id} = \@parts;
-        download($id);
+sub getpage {
+    state $page = 0;
+    $page++;
+    fetch("http://saturnraw.jpl.nasa.gov/cassiniapi/raw/?page=$page", sub {
+        my $d = decode_json(shift);
+        for (@{$d->{DATA}}) {
+            my %i = %$_;
+            my @parts = (
+                $i{feiimageid}, $i{filename},                        # 0, 1
+                date_fmt($i{observeDate}), date_fmt($i{earthDate}),  # 2, 3, 4, 5 (2 each)
+                target_fmt($i{target}),                              # 6
+                range_fmt($i{range_km}),                             # 7
+                $i{filter1}, $i{filter2},                            # 8, 9
+                URI->new($i{full})->abs('http://saturnraw.jpl.nasa.gov')->as_string); # 10
+            my $download_as = join('.', $parts[2], $parts[1] =~ /^(\w+).jpg/, @parts[6,8,9,7], 'jpg');
+            push @parts, $download_as;                   # 11
+            AE::log info => join ('|', @parts);
+            my $id = $i{feiimageid};
+            $results{$id} //= \@parts;
+            download($id);
+            ($id > 302919 && $page < 500) ? AE::postpone {getpage()} : $cv->end;
+        };
     });
 };
 
