@@ -54,8 +54,8 @@ sub getpage {
             my $id = $i{feiimageid};
             $results{$id} //= \@parts;
             download($id);
-            ($id > 302919 && $page < 500) ? AE::postpone {getpage()} : $cv->end;
         };
+        ($page < 500) ? AE::postpone {getpage()} : $cv->end;
     });
 };
 
