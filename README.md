@@ -38,10 +38,10 @@ Steps:
 On Ubuntu, the following should install the needed deps:
 
 ```
-apt-get install libanyevent-http-perl libdatetime-format-natural-perl liburi-perl
+apt-get install libanyevent-http-perl libdatetime-format-natural-perl liburi-perl libjson-perl
 ```
 
-Also recommended but not critical: `libev-perl`
+Also recommended but not critical: `libev-perl libjson-xs-perl`
 
 On other systems, similar package tools should provide what's needed,
 although the names of the packages will vary by platform and packaging system.
@@ -52,30 +52,25 @@ cpanm AnyEvent
 cpanm AnyEvent::HTTP
 cpanm DateTime::Format::Natural
 cpanm URI
+cpanm JSON
 ```
 
 Note: I'm advised you may need `--force` for the `AnyEvent` module, 
 at least on Windows; I have not yet looked into why.
 
-## Scheduling
-
-All requests are scheduled in a (potentially very long) queue; this
-has the effect that the first time it's run, it will spend a long time
-fetching metadata before any image downloads reach the front of the
-queue.
-
-If you want to see some images, let it run for a while, interrupt it
-with `^C`, and start it again.  This will queue downloads for the images
-already known before looking for more.
-
 ## Tweaking and Load
 
-The script is wired to start at the first image of 2014 (images before
-this will be in the PDS).  If you want to change this range you can
-edit the line
+The script is wired to fetch 500 index pages (x 48 = 24,000 images).
+This will go back about a year (images before this will be in the
+PDS).
+
+If you run it regularly, you probably don't need to fetch this many
+pages every time.  This will hopefully get smarter in future.
+
+If you want to change this range you can edit the line
 
 ```perl
-    get_metadata($_) for (302919 .. $max); # 1st image of 2014
+    ($page < 500) ? AE::postpone {getpage()} : $cv->end;
 ```
 
 New images will be auto-detected on each run.
