@@ -29,7 +29,7 @@ if (scalar %results) {
     AE::log note => "Queued %d downloads of previously known images..", $count if $count;
 }
 
-getpage();
+getpage() for (1 .. 3);
 $cv->wait;
 save();
 exit 0;
