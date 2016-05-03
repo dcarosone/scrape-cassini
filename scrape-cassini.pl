@@ -52,7 +52,7 @@ sub getpage {
             push @parts, $download_as;                   # 11
             AE::log info => join ('|', @parts);
             my $id = $i{feiimageid};
-            $results{$id} //= \@parts;
+            $results{$id} = \@parts;
             download($id);
         };
         ($page < 500) ? AE::postpone {getpage()} : $cv->end;
