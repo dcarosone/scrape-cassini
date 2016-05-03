@@ -55,7 +55,8 @@ sub getpage {
             $results{$id} = \@parts;
             download($id);
         };
-        ($page < 500) ? AE::postpone {getpage()} : $cv->end;
+        AE::postpone {getpage()} if $page <= 500;
+        $cv->end if $page == 500;
     });
 };
 
