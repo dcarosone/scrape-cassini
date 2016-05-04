@@ -50,8 +50,9 @@ sub getpage {
                 URI->new($i{full})->abs('http://saturnraw.jpl.nasa.gov')->as_string); # 10
             my $download_as = join('.', $parts[2], $parts[1] =~ /^(\w+).jpg/, @parts[6,8,9,7], 'jpg');
             push @parts, $download_as;                   # 11
-            AE::log info => join ('|', @parts);
+            AE::log debug => join ('|', @parts);
             my $id = $i{feiimageid};
+            AE::log info  => "found new image id $id" unless exists $results{$id};
             $results{$id} = \@parts;
             download($id);
         };
@@ -87,7 +88,7 @@ sub download {
         print $fh $body;
         close $fh;
         utime $mtime, $mtime, $fn;
-        AE::log info => "download %s from %s", $fn, $url;
+        AE::log info => "downloaded %s", $fn;
     });
     return 1;
 };
