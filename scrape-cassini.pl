@@ -51,8 +51,9 @@ save();
 exit 0;
 
 sub getpage {
-    state $page = 0;
-    $page++;
+    state $nextpage = 0;
+    my $page = ++$nextpage;
+    return unless $page <= $pagelimit;
     fetch("http://saturnraw.jpl.nasa.gov/cassiniapi/raw/?page=$page", sub {
         my $d = decode_json(shift);
         for (@{$d->{DATA}}) {
@@ -73,7 +74,7 @@ sub getpage {
             download($id);
         };
         ++$stats{pages};
-        AE::postpone {getpage()} if $page <= $pagelimit;
+        AE::postpone {getpage()};
         $cv->end if $page == $pagelimit;
     });
 };
