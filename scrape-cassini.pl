@@ -10,11 +10,13 @@ use DateTime::Format::Natural;
 my $date_parser = DateTime::Format::Natural->new();
 
 my $verbose = 6;
+my $pagelimit = 50;
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 GetOptions(
     'verbose|v' => sub {$verbose++},
-    'quiet|q'   => sub {$verbose--}
+    'quiet|q'   => sub {$verbose--},
+    'pages|p=i' => \$pagelimit
     );
 
 $AnyEvent::HTTP::MAX_PER_HOST=8;
@@ -71,8 +73,8 @@ sub getpage {
             download($id);
         };
         ++$stats{pages};
-        AE::postpone {getpage()} if $page <= 500;
-        $cv->end if $page == 500;
+        AE::postpone {getpage()} if $page <= $pagelimit;
+        $cv->end if $page == $pagelimit;
     });
 };
 

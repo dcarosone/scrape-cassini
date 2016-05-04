@@ -87,20 +87,42 @@ notes and even warnings and errors (with more), if you want.
 
 ### Tweaking and Load
 
-The script is wired to fetch 500 index pages (x 48 = 24,000 images).
-This will go back about a year (images before this will be in the
-PDS).
+The site chunks index metadata into 'pages' of 48 entries each.
+The script defaults to fetching 50 index pages (x 48 = 2,400 images).
+
+New images will be auto-detected on each run, but only within the
+range of pages it fetches.
 
 If you run it regularly, you probably don't need to fetch this many
-pages every time.  This will hopefully get smarter in future.
+pages every time, especially if you're just checking to see if there
+are any new images.
+On some days, many images are added, and this may not be enough
+even if it has been run fairly regularly.  You may have gaps if the
+indexer doesn't go back far enough.
 
-If you want to change this range you can edit the line
+If you want to change this range you can use `--pages` (or `-p`). Some
+suggested values:
 
-```perl
-    ($page < 500) ? AE::postpone {getpage()} : $cv->end;
-```
+ * `-p 5` to quickly check whether there are any new images.
+   Sometimes they arrive out of order, so a small number might be
+   better than just 1.
 
-New images will be auto-detected on each run.
+ * `-p 20` if running a few times a day as images are being added.
+
+ * `-p 100` if it's been some time since you last ran it, or you
+   suspect you have some data gaps because you interrupted it before
+   it completed last time.
+
+ * `-p 500` to go back about a year (images before this will be in the
+   PDS).
+
+As it runs, you can watch the status updates (especially with
+`-v`). If you get to a point where additional index pages are not
+discovering new images, you can safely interrupt it with `^C`. If
+you're still getting images downloaded at the end of the run, you
+might want to run again with more pages, as you probably have a gap.
+
+This will hopefully get smarter in future.
 
 Try not to run it too often and annoy the NASA admins.
 
