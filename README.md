@@ -24,7 +24,7 @@ be run at any time, stopped at any time, and will resume where it left
 off.  If anything needs to be re-fetched, just delete the row from the
 TSV, or delete the image file.
 
-## Running
+## Getting Started
 
 The program is a perl script with dependency on a few libraries.
 
@@ -58,7 +58,32 @@ cpanm JSON
 Note: I'm advised you may need `--force` for the `AnyEvent` module, 
 at least on Windows; I have not yet looked into why.
 
-## Tweaking and Load
+## Running
+
+You can just run `./scrape-cassini.pl`.  The program produces
+relatively little output by default:
+
+ * a status summary every 20s like
+```
+2016-05-04 13:38:53.438688 +1000 note  main: In 60 s: 22 pages, 17 new images, 17 downloaded, 0 to download.
+```
+
+ * a save total every 5 mins (and on exit via `^C`)
+```
+2016-05-04 13:46:08.680355 +1000 note  main: Saving metadata: 27650 known images
+```
+
+### Verbosity
+
+You can add several levels of verbosity (`--verbose`, `-v`) for
+ * **info** about images as they are found and downloaded (`-v`)
+ * **debug** messages about metadata contents and HTTP response codes (`-vv`)
+ * **trace** each outgoing HTTP request (`-vvv`)
+
+You can also obtain some quietitude using (`--quiet`, `-q`) to suppress
+notes and even warnings and errors (with more), if you want.
+
+### Tweaking and Load
 
 The script is wired to fetch 500 index pages (x 48 = 24,000 images).
 This will go back about a year (images before this will be in the
@@ -75,15 +100,9 @@ If you want to change this range you can edit the line
 
 New images will be auto-detected on each run.
 
-Images that don't exist on the server will be skipped, and retried
-next time. Sometimes image links show up in the index page shortly
-before the corresponding images actually exist. However, there are
-also some internal gaps in valid image numbers; these will be
-re-attempted each time.
-
 Try not to run it too often and annoy the NASA admins.
 
-## Output
+### Output
 
 The TSV file has the following fields, 
 

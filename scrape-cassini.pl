@@ -9,8 +9,16 @@ use URI;
 use DateTime::Format::Natural;
 my $date_parser = DateTime::Format::Natural->new();
 
+my $verbose = 6;
+use Getopt::Long;
+Getopt::Long::Configure ("bundling");
+GetOptions(
+    'verbose|v' => sub {$verbose++},
+    'quiet|q'   => sub {$verbose--}
+    );
+
 $AnyEvent::HTTP::MAX_PER_HOST=8;
-$AnyEvent::Log::FILTER->level ("info");
+$AnyEvent::Log::FILTER->level ($verbose);
 
 my $fn = 'output.tsv';
 my $cv = AE::cv;
@@ -20,13 +28,19 @@ load();
 my $savew = AE::timer  300, 300, sub {save()};
 my $cvint = AE::signal INT => sub {$cv->send};
 
+my %stats = (pages => 0, todownload => 0, new => 0, downloaded => 0, start => AE::now);
+my $statw = AE::timer 20, 20, sub {
+    AE::log note =>
+        'In %d s: %d pages, %d new images, %d downloaded, %d to download.',
+        AE::now - $stats{start}, @stats{qw{pages new downloaded todownload}};
+};
 
 $cv->begin;
 
 if (scalar %results) {
     my $count;
     $count += download($_) for keys %results;
-    AE::log note => "Queued %d downloads of previously known images..", $count if $count;
+    AE::log note => "Queued %d downloads of previously-known images..", $count if $count;
 }
 
 getpage() for (1 .. 3);
@@ -52,10 +66,11 @@ sub getpage {
             push @parts, $download_as;                   # 11
             AE::log debug => join ('|', @parts);
             my $id = $i{feiimageid};
-            AE::log info  => "found new image id $id" unless exists $results{$id};
+            AE::log info  => 'found new image %s (of %d)', $id, ++$stats{new} unless exists $results{$id};
             $results{$id} = \@parts;
             download($id);
         };
+        ++$stats{pages};
         AE::postpone {getpage()} if $page <= 500;
         $cv->end if $page == 500;
     });
@@ -80,6 +95,7 @@ sub download {
 
     $fn = 'images/'.$fn;
     return 0 if -f $fn;
+    ++$stats{todownload};
     fetch($url, sub {
         my $body = shift;
         mkdir 'images' unless -d 'images';
@@ -89,6 +105,8 @@ sub download {
         close $fh;
         utime $mtime, $mtime, $fn;
         AE::log info => "downloaded %s", $fn;
+        --$stats{todownload};
+        ++$stats{downloaded};
     });
     return 1;
 };
