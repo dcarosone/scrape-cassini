@@ -60,8 +60,10 @@ at least on Windows; I have not yet looked into why.
 
 ## Running
 
-You can just run `./scrape-cassini.pl`.  The program produces
-relatively little output by default:
+Once the dependencies are installed, you can just run
+`./scrape-cassini.pl`.
+
+The program produces relatively little output by default:
 
  * a status summary every 20s like
 ```
