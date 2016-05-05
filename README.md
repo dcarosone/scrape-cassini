@@ -103,11 +103,13 @@ indexer doesn't go back far enough.
 If you want to change this range you can use `--pages` (or `-p`). Some
 suggested values:
 
- * `-p 5` to quickly check whether there are any new images.
-   Sometimes they arrive out of order, so a small number might be
-   better than just 1.
+ * `-p 1` to quickly check whether there are any new images, and then
+   re-run with a higher number to catch the extras if there were new
+   ones.  Sometimes they arrive out of order, so 2-4 might be better
+   than just 1.
 
- * `-p 20` if running a few times a day as images are being added.
+ * `-p 20` if running a few times a day as images are being added, or
+   after the above detects new images.
 
  * `-p 100` if it's been some time since you last ran it, or you
    suspect you have some data gaps because you interrupted it before
@@ -116,13 +118,13 @@ suggested values:
  * `-p 500` to go back about a year (images before this will be in the
    PDS).
 
-As it runs, you can watch the status updates (especially with
-`-v`). If you get to a point where additional index pages are not
-discovering new images, you can safely interrupt it with `^C`. If
-you're still getting images downloaded at the end of the run, you
-might want to run again with more pages, as you probably have a gap.
+As it runs, you can watch the status updates. If you get to a point
+where additional index pages are not discovering new images, you can
+safely interrupt it with `^C`. If you're still getting images
+downloaded at the end of the run, you might want to run again with
+more pages, as you probably have a gap.
 
-This will hopefully get smarter in future.
+This will all hopefully get smarter in future (some ideas in #2).
 
 Try not to run it too often and annoy the NASA admins.
 
@@ -145,6 +147,21 @@ The TSV file has the following fields,
 * `download-as` The filename it will be save as, encoding the above fields.
 
 There's a sample in the repo to look at.
+
+
+## History
+
+This program was originally written for an earlier, much less
+user-friendly version of the site, where it literally had to scrape
+metadata from the HTML text.
+
+For casual use, browsing, filtering by (say) target and download of
+selective images, the new site is much better.
+
+This grabber now uses the JSON data that drives the new site, but
+preserves the metadata TSV format and filename-encoding for continuity
+with data fetched using the original.
+
 
 ## Issues
 
